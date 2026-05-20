@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { OMX30_STOCKS } from "./data/omx30";
-import { fetchPrediction, fetchMockPrediction } from "./api/predictionApi";
+import { fetchPrediction } from "./api/predictionApi";
 import type { PredictionResponse } from "./types";
 import StatCard from "./compontents/StatCard";
 
@@ -41,9 +41,8 @@ export default function App() {
 
   const expectedMove = useMemo(() => {
     if (!prediction) return null;
-    const delta = prediction.predicted_return - prediction.current_price;
-    const pct =
-      prediction.current_price !== 0 ? delta / prediction.current_price : 0;
+    const delta = prediction.predicted_price - prediction.recent_price;
+    const pct = prediction.predicted_return;
     return { delta, pct };
   }, [prediction]);
 
@@ -51,7 +50,7 @@ export default function App() {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchMockPrediction(symbol, horizonDays);
+      const data = await fetchPrediction(symbol, horizonDays);
       setPrediction(data);
     } catch (err: any) {
       setError(
@@ -130,31 +129,35 @@ export default function App() {
                 <StatCard
                   title="Nuvarande kurs"
                   value={formatPrice(
-                    prediction.current_price,
-                    "SEK"
+                    prediction.recent_price,
+                    prediction.currency ?? "SEK"
                   )}
                 />
                 <StatCard
                   title={`Predikterat pris om ${prediction.horizon_days} dagar`}
                   value={formatPrice(
-                    prediction.predicted_return,
-                    "SEK"
+                    prediction.predicted_price,
+                    prediction.currency ?? "SEK"
                   )}
                   accent
                 />
                 <StatCard
-                  title="Lägsta uppskattning"
+                  title="Lägsta uppskattade kurs"
                   value={formatPrice(
-                    prediction.lower_return,
-                    "SEK"
+                    prediction.lower_price,
+                    prediction.currency ?? "SEK"
                   )}
                 />
                 <StatCard
-                  title="Högsta uppskattning"
+                  title="Högsta uppskattade kurs"
                   value={formatPrice(
-                    prediction.upper_return,
-                    "SEK"
+                    prediction.upper_price,
+                    prediction.currency ?? "SEK"
                   )}
+                />
+                <StatCard
+                  title="Predikterad avkastning"
+                  value={formatPercent(prediction.predicted_return)}
                 />
                 <StatCard
                   title="Confidence score"
@@ -168,8 +171,8 @@ export default function App() {
                     expectedMove
                       ? `${formatPrice(
                           expectedMove.delta,
-                          "SEK"
-                        )} (${(expectedMove.pct * 100).toFixed(2)} %)`
+                          prediction.currency ?? "SEK"
+                        )} (${formatPercent(expectedMove.pct)})`
                       : "-"
                   }
                 />
@@ -181,24 +184,24 @@ export default function App() {
               <div className="range-bar-wrapper">
                 <div className="range-labels">
                   <span>
-                    Min:{" "}
+                    Min: {" "}
                     {formatPrice(
-                      prediction.lower_return,
-                      "SEK"
+                      prediction.lower_price,
+                      prediction.currency ?? "SEK"
                     )}
                   </span>
                   <span>
-                    Prognos:{" "}
+                    Prognos: {" "}
                     {formatPrice(
-                      prediction.predicted_return,
-                      "SEK"
+                      prediction.predicted_price,
+                      prediction.currency ?? "SEK"
                     )}
                   </span>
                   <span>
-                    Max:{" "}
+                    Max: {" "}
                     {formatPrice(
-                      prediction.upper_return,
-                      "SEK"
+                      prediction.upper_price,
+                      prediction.currency ?? "SEK"
                     )}
                   </span>
                 </div>

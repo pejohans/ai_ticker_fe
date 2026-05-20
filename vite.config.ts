@@ -31,4 +31,13 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      "/predict": {
+        target: "https://stockml-api.bluebay-9224ad5d.swedencentral.azurecontainerapps.io",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 });

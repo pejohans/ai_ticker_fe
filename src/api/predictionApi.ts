@@ -1,7 +1,10 @@
 import axios from "axios";
 import type { PredictionResponse } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_BASE_URL =
+  import.meta.env.MODE === "development"
+    ? ""
+    : ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "");
 
 export async function fetchPrediction(
   symbol: string,
@@ -44,10 +47,13 @@ export async function fetchMockPrediction(
     predicted_return: predictedPrice,
     lower_return: lowerPrice,
     upper_return: upperPrice,
+    predicted_price: predictedPrice,
+    lower_price: lowerPrice,
+    upper_price: upperPrice,
     confidence: 0.8 + Math.random() * 0.1,
     model_version: "mock-v5",
     generated_at: new Date().toISOString(),
-    current_price: currentPrice,
+    recent_price: currentPrice,
   };
 
   console.log("Mock prediction generated:", dummy);
